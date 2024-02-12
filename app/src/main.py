@@ -7,7 +7,7 @@ from core.menu import set_main_menu
 from core.config import settings
 from db import redis_storage
 from handlers import captcha
-#from time_schedule import scheduler
+
 #from aiogram3_di import DIMiddleware
 
 async def main() -> None:
@@ -25,7 +25,10 @@ async def main() -> None:
     #dp.callback_query.middleware(DIMiddleware())
 
     await set_main_menu(bot)
-    #scheduler.start()
+
+    from background.regular import scheduler
+
+    scheduler.start()
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 

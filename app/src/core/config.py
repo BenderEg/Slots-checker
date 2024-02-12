@@ -18,5 +18,6 @@ class Settings(BaseSettings):
     token: str
     link: HttpUrl
     redis: RedisSettings
+    owner_id: int
 
 settings = Settings()

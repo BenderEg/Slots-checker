@@ -9,7 +9,7 @@ from models.filters import SixDigitCaptchaFilter
 router: Router = Router()
 
 @router.message(
-        #StateFilter(FSMmodel.captcha),
+        StateFilter(FSMmodel.captcha),
         SixDigitCaptchaFilter()
         )
 async def solve_captcha(message: Message,
@@ -17,4 +17,11 @@ async def solve_captcha(message: Message,
                         value: str,
                         #service: csv_service
                         ):
+    data = await state.get_data()
+    headers = data.get("headers")
+    cookies = data.get("cookies")
+    payload = data.get("payload")
+    print(f"{headers=}")
+    print(f"{cookies=}")
+    print(f"{payload=}")
     await message.answer(text=f"I got captcha {value}")
