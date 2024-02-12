@@ -1,0 +1,23 @@
+services:
+    red:
+        container_name: red
+        image: redis
+        volumes:
+            - pass_redis:/data
+        ports:
+            - 6379:6379
+        networks:
+            - pass_net
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+            interval: 1s
+            timeout: 3s
+            retries: 5
+
+volumes:
+    pass_redis:
+        name: pass_redis
+
+networks:
+    pass_net:
+        name: pass_net
