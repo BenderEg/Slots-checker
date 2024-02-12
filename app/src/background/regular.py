@@ -10,11 +10,14 @@ from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import FSInputFile
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bs4 import BeautifulSoup
+from dependency_injector.wiring import Provide, inject
 
+from containers.container import Container
 from core import bot
 from core.config import settings
 from core.state import FSMmodel
 from db.redis_storage import get_redis
+from services.abstract import AbstractContentGetter
 from services.request_service import get_data_getter
 
 
@@ -33,15 +36,15 @@ async def clear_tmp() -> None:
     path = pathlib.Path.cwd().joinpath("tmp", f"{today}.jpg")
     path.unlink(missing_ok=True)
 
-
-async def check_status():
+@inject
+async def check_status(service: AbstractContentGetter = Provide[Container.request_service]):
     redis = await get_redis()
     state = FSMContext(storage=RedisStorage(redis=redis),
                        key=StorageKey(bot_id=bot.bot.id,
                                       chat_id=settings.owner_id,
                                       user_id=settings.owner_id)
                                       )
-    service = await get_data_getter()
+    #service = await get_data_getter()
     html_text, _, _ = await service.get_text(settings.link)
     soup = BeautifulSoup(html_text, 'lxml')
     img_tag = soup.find("img")
