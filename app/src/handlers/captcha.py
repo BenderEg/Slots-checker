@@ -3,7 +3,9 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
+from containers.container import Container
 from core.state import FSMmodel
+from dependency_injector.wiring import Provide, inject
 from models.filters import SixDigitCaptchaFilter
 
 router: Router = Router()
@@ -12,10 +14,11 @@ router: Router = Router()
         StateFilter(FSMmodel.captcha),
         SixDigitCaptchaFilter()
         )
+@inject
 async def solve_captcha(message: Message,
                         state: FSMContext,
                         value: str,
-                        #service: csv_service
+                        request_service: Provide[Container.request_service]
                         ):
     data = await state.get_data()
     headers = data.get("headers")

@@ -4,6 +4,7 @@ from datetime import datetime
 from json import dumps
 from uuid import UUID
 
+from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 from aiogram.fsm.storage.redis import RedisStorage
@@ -11,15 +12,12 @@ from aiogram.types import FSInputFile
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bs4 import BeautifulSoup
 from dependency_injector.wiring import Provide, inject
+from redis.asyncio import Redis
 
 from containers.container import Container
-from core import bot
 from core.config import settings
 from core.state import FSMmodel
-from db.redis_storage import get_redis
 from services.abstract import AbstractContentGetter
-from services.request_service import get_data_getter
-
 
 scheduler = AsyncIOScheduler()
 
@@ -37,14 +35,16 @@ async def clear_tmp() -> None:
     path.unlink(missing_ok=True)
 
 @inject
-async def check_status(service: AbstractContentGetter = Provide[Container.request_service]):
-    redis = await get_redis()
+async def check_status(
+        redis: Redis = Provide[Container.redis],
+        bot: Bot = Provide[Container.bot],
+        service: AbstractContentGetter = Provide[Container.request_service]
+        ):
     state = FSMContext(storage=RedisStorage(redis=redis),
-                       key=StorageKey(bot_id=bot.bot.id,
+                       key=StorageKey(bot_id=bot.id,
                                       chat_id=settings.owner_id,
                                       user_id=settings.owner_id)
                                       )
-    #service = await get_data_getter()
     html_text, _, _ = await service.get_text(settings.link)
     soup = BeautifulSoup(html_text, 'lxml')
     img_tag = soup.find("img")
@@ -70,10 +70,10 @@ async def check_status(service: AbstractContentGetter = Provide[Container.reques
     await clear_tmp()
     await state.set_state(FSMmodel.captcha)
     await state.update_data(payload=data, headers=headers, cookies=cookies)
-    await bot.bot.send_photo(chat_id=settings.owner_id,
-                             photo=captcha,
-                             #caption="В ответ пришлите расшифровку кэпчи."
-                             )
+    await bot.send_photo(chat_id=settings.owner_id,
+                         photo=captcha,
+                         #caption="В ответ пришлите расшифровку кэпчи."
+                         )
 
 
 scheduler.add_job(check_status, "interval", seconds=30)
