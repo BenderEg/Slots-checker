@@ -31,7 +31,7 @@ async def process_image(image: bytes) -> FSInputFile:
 
 async def clear_tmp() -> None:
     today = datetime.utcnow().date().isoformat()
-    path = pathlib.Path.cwd().joinpath("tmp", f"{today}.jpg")
+    path = pathlib.Path.cwd().joinpath("tmp", f"{today}.jpeg")
     path.unlink(missing_ok=True)
 
 @inject
@@ -55,7 +55,6 @@ async def check_status(
     data = {e.attrs.get("name"): e.attrs.get("value") for e in c_form.find_all("input")}
     data["__EVENTTARGET"] = ''
     data["__EVENTARGUMENT"] = ''
-    #data["ctl00$MainContent$txtCode"] = ''
 
     ASP_session_id = cookies.get("ASP.NET_SessionId")
     headers = {
@@ -67,13 +66,13 @@ async def check_status(
    'Host': 'trabzon.kdmid.ru',
    'Cookie': "; ".join([f"{key}={value}" for (key, value) in cookies.items()]+[f'ASP.NET_SessionId={ASP_session_id}'])
 }
-    await clear_tmp()
     await state.set_state(FSMmodel.captcha)
     await state.update_data(payload=data, headers=headers, cookies=cookies)
     await bot.send_photo(chat_id=settings.owner_id,
                          photo=captcha,
                          #caption="В ответ пришлите расшифровку кэпчи."
                          )
+    await clear_tmp()
 
 
 scheduler.add_job(check_status, "interval", seconds=30)
