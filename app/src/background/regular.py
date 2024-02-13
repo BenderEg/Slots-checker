@@ -17,11 +17,12 @@ from redis.asyncio import Redis
 from containers.container import Container
 from core.config import settings
 from core.state import FSMmodel
-from services.abstract import AbstractContentGetter
+from services.abstract import AbstractContentGetter, AbstractImageService
 
 scheduler = AsyncIOScheduler()
 
-async def process_image(image: bytes) -> FSInputFile:
+'''
+async def save_image(image: bytes) -> FSInputFile:
     today = datetime.utcnow().date().isoformat()
     path = pathlib.Path.cwd().joinpath("tmp", f"{today}.jpeg")
     path.touch()
@@ -29,28 +30,31 @@ async def process_image(image: bytes) -> FSInputFile:
     return FSInputFile(path=path)
 
 
-async def clear_tmp() -> None:
+async def delete_image() -> None:
     today = datetime.utcnow().date().isoformat()
     path = pathlib.Path.cwd().joinpath("tmp", f"{today}.jpeg")
     path.unlink(missing_ok=True)
+'''
 
 @inject
 async def check_status(
         redis: Redis = Provide[Container.redis],
         bot: Bot = Provide[Container.bot],
-        service: AbstractContentGetter = Provide[Container.request_service]
+        request_service: AbstractContentGetter = Provide[Container.request_service],
+        image_service: AbstractImageService = Provide[Container.image_service]
         ):
     state = FSMContext(storage=RedisStorage(redis=redis),
                        key=StorageKey(bot_id=bot.id,
                                       chat_id=settings.owner_id,
                                       user_id=settings.owner_id)
                                       )
-    html_text, _, _ = await service.get_text(settings.link)
+    html_text, _, _ = await request_service.get_text(settings.link)
     soup = BeautifulSoup(html_text, 'lxml')
     img_tag = soup.find("img")
     img_link = f"{settings.link.scheme}://{settings.link.host}/queue/{img_tag.get('src')}"
-    image, headers, cookies = await service.get_content(img_link)
-    captcha = await process_image(image)
+    image, headers, cookies = await request_service.get_content(img_link)
+    image_service.save_image(image)
+    captcha = FSInputFile(path=image_service.path)
     c_form = soup.find("form")
     data = {e.attrs.get("name"): e.attrs.get("value") for e in c_form.find_all("input")}
     data["__EVENTTARGET"] = ''
@@ -72,7 +76,7 @@ async def check_status(
                          photo=captcha,
                          #caption="В ответ пришлите расшифровку кэпчи."
                          )
-    await clear_tmp()
+    image_service.delete_image()
 
 
 scheduler.add_job(check_status, "interval", seconds=30)

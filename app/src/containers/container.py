@@ -4,6 +4,7 @@ from dependency_injector import containers, providers
 
 from core.config import Settings
 from db.redis_storage import get_redis
+from services.image_service import ImageService
 from services.request_service import DataGetter
 
 
@@ -18,3 +19,4 @@ class Container(containers.DeclarativeContainer):
     storage: providers.Singleton[RedisStorage] = providers.Singleton(RedisStorage, redis)
     dp: providers.Singleton[Dispatcher] = providers.Singleton(Dispatcher, storage=storage)
     request_service: providers.Singleton[DataGetter] = providers.Singleton(DataGetter)
+    image_service: providers.Singleton[ImageService] = providers.Singleton(ImageService)
