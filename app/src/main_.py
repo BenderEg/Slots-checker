@@ -19,7 +19,6 @@ async def main():
     await process_image(image)
 
     c_form = soup.find("form")
-    print(c_form.find_all("input"))
     data = {e.attrs.get("name"): e.attrs.get("value") for e in c_form.find_all("input")}
     solved_captcha = input()
     data["__EVENTTARGET"] = ''
@@ -42,6 +41,11 @@ async def main():
                                          cookies=cookies
                                          )
     soup = BeautifulSoup(html_text, 'lxml')
+    check_captcha = soup.find("span", id="ctl00_MainContent_lblCodeErr")
+    if check_captcha:
+        print(f"Символы с картинки введены неправильно. Пожалуйста, повторите попытку")
+        await clear_tmp()
+        return
     c_form = soup.find("form")
     data = {e.attrs.get("name"): e.attrs.get("value") for e in c_form.find_all("input")}
     data["__EVENTTARGET"] = ''

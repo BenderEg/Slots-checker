@@ -21,21 +21,6 @@ from services.abstract import AbstractContentGetter, AbstractImageService
 
 scheduler = AsyncIOScheduler()
 
-'''
-async def save_image(image: bytes) -> FSInputFile:
-    today = datetime.utcnow().date().isoformat()
-    path = pathlib.Path.cwd().joinpath("tmp", f"{today}.jpeg")
-    path.touch()
-    path.write_bytes(image)
-    return FSInputFile(path=path)
-
-
-async def delete_image() -> None:
-    today = datetime.utcnow().date().isoformat()
-    path = pathlib.Path.cwd().joinpath("tmp", f"{today}.jpeg")
-    path.unlink(missing_ok=True)
-'''
-
 @inject
 async def check_status(
         redis: Redis = Provide[Container.redis],
@@ -79,4 +64,4 @@ async def check_status(
     image_service.delete_image()
 
 
-scheduler.add_job(check_status, "interval", seconds=30)
+scheduler.add_job(check_status, "cron", hour=11, minute=8)

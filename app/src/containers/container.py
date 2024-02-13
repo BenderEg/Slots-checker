@@ -18,5 +18,5 @@ class Container(containers.DeclarativeContainer):
     bot: providers.Singleton[Bot] = providers.Singleton(Bot, settings().token)
     storage: providers.Singleton[RedisStorage] = providers.Singleton(RedisStorage, redis)
     dp: providers.Singleton[Dispatcher] = providers.Singleton(Dispatcher, storage=storage)
-    request_service: providers.Singleton[DataGetter] = providers.Singleton(DataGetter)
-    image_service: providers.Singleton[ImageService] = providers.Singleton(ImageService)
+    request_service: providers.Factory[DataGetter] = providers.Factory(DataGetter)
+    image_service: providers.Factory[ImageService] = providers.Factory(ImageService)
