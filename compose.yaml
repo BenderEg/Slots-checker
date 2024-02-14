@@ -1,0 +1,24 @@
+services:
+    red:
+        container_name: red
+        image: redis
+        networks:
+            - pass_net
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+            interval: 1s
+            timeout: 3s
+            retries: 5
+    app:
+        container_name: app
+        build: ./app
+        env_file:
+            - .env
+        networks:
+            - pass_net
+        depends_on:
+          red:
+            condition: service_healthy
+networks:
+    pass_net:
+        name: pass_net
