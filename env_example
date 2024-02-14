@@ -1,0 +1,12 @@
+# app
+
+LINK= full link received by website
+TOKEN= bot token
+OWNER_ID= owner id to send status notifications
+TIME=[6, 13] - hours of cron job
+
+# redis
+
+REDIS__HOST=red
+REDIS__PORT=6379
+REDIS__DB=0
