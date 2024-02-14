@@ -1,9 +1,3 @@
-import pathlib
-
-from datetime import datetime
-from json import dumps
-from uuid import UUID
-
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
@@ -44,7 +38,6 @@ async def check_status(
     data = {e.attrs.get("name"): e.attrs.get("value") for e in c_form.find_all("input")}
     data["__EVENTTARGET"] = ''
     data["__EVENTARGUMENT"] = ''
-
     ASP_session_id = cookies.get("ASP.NET_SessionId")
     headers = {
    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36',
@@ -53,15 +46,17 @@ async def check_status(
    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
    'Connection': 'keep-alive',
    'Host': 'trabzon.kdmid.ru',
-   'Cookie': "; ".join([f"{key}={value}" for (key, value) in cookies.items()]+[f'ASP.NET_SessionId={ASP_session_id}'])
+   'Cookie': "; ".join(
+       [f"{key}={value}" for (key, value) in cookies.items()
+        ]+[f'ASP.NET_SessionId={ASP_session_id}'])
 }
     await state.set_state(FSMmodel.captcha)
     await state.update_data(payload=data, headers=headers, cookies=cookies)
     await bot.send_photo(chat_id=settings.owner_id,
-                         photo=captcha,
-                         #caption="В ответ пришлите расшифровку кэпчи."
+                         photo=captcha
                          )
     image_service.delete_image()
 
 
-scheduler.add_job(check_status, "cron", hour=11, minute=8)
+scheduler.add_job(check_status, "cron", hour=6, minute=0)
+scheduler.add_job(check_status, "cron", hour=10, minute=0)

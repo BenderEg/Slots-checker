@@ -2,7 +2,7 @@ import asyncio
 
 from containers.container import Container
 from core.menu import set_main_menu
-from handlers import captcha
+from handlers import captcha, help
 
 
 async def main() -> None:
@@ -11,10 +11,7 @@ async def main() -> None:
     container.init_resources()
     container.wire(modules=["background.regular", "handlers.captcha"])
     container.dp().include_router(captcha.router)
-
-    #dp.message.middleware(DIMiddleware())
-    #dp.callback_query.middleware(DIMiddleware())
-
+    container.dp().include_router(help.router)
     await set_main_menu(container.bot())
 
     from background.regular import scheduler

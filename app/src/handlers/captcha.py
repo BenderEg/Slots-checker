@@ -48,9 +48,13 @@ async def solve_captcha(message: Message,
         data["__EVENTTARGET"] = ''
         data["__EVENTARGUMENT"] = ''
         ASP_session_id = cookies.get("ASP.NET_SessionId")
-        headers["Cookie"] = "; ".join([f"{key}={value}" for (key, value) in cookies.items()]+[f'ASP.NET_SessionId={ASP_session_id}'])
+        headers["Cookie"] = "; ".join(
+            [f"{key}={value}" for (key, value) in cookies.items()
+             ]+[f'ASP.NET_SessionId={ASP_session_id}'])
         await state.update_data(payload=data, headers=headers, cookies=cookies)
-        await message.answer(text="Символы с картинки введены неправильно. Пожалуйста, повторите попытку.")
+        await message.answer(
+            text="Символы с картинки введены неправильно. Пожалуйста, повторите попытку."
+            )
         await message.answer_photo(photo=captcha)
         image_service.delete_image()
         return
@@ -70,3 +74,7 @@ async def solve_captcha(message: Message,
     msg = result + "\n" + str(settings.link)
     await message.answer(text=msg)
     await state.set_state(state=None)
+
+@router.message(StateFilter(FSMmodel.captcha))
+async def wrong_input(message: Message):
+    await message.answer(text="Неверный ввод для капча. Попробуйте еще раз.")
