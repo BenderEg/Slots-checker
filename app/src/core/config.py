@@ -19,5 +19,6 @@ class Settings(BaseSettings):
     link: HttpUrl
     redis: RedisSettings
     owner_id: int
+    time: list
 
 settings = Settings()

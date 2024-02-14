@@ -58,5 +58,5 @@ async def check_status(
     image_service.delete_image()
 
 
-scheduler.add_job(check_status, "cron", hour=6, minute=0)
-scheduler.add_job(check_status, "cron", hour=10, minute=0)
+for hour in settings.time:
+    scheduler.add_job(check_status, "cron", hour=hour, minute=8)
