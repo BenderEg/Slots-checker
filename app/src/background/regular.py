@@ -45,7 +45,7 @@ async def check_status(
    'Accept-Encoding': 'gzip, deflate, br',
    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
    'Connection': 'keep-alive',
-   'Host': 'trabzon.kdmid.ru',
+   'Host': settings.link.host,
    'Cookie': "; ".join(
        [f"{key}={value}" for (key, value) in cookies.items()
         ]+[f'ASP.NET_SessionId={ASP_session_id}'])
@@ -59,4 +59,4 @@ async def check_status(
 
 
 for hour in settings.time:
-    scheduler.add_job(check_status, "cron", hour=hour, minute=8)
+    scheduler.add_job(check_status, "cron", hour=hour, minute=0)
