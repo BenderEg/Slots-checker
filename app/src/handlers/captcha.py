@@ -71,7 +71,10 @@ async def solve_captcha(message: Message,
                                                  )
     soup = BeautifulSoup(html_text, 'lxml')
     result = soup.find("table").find("td", id="center-panel").find("p").text
-    msg = result + "\n" + str(settings.link)
+    if result:
+        msg = result + "\n" + str(settings.link)
+    else:
+        msg = "Появились доступные даты для записи:" + "\n" + str(settings.link)
     await message.answer(text=msg)
     await state.set_state(state=None)
 
